@@ -2,10 +2,15 @@ from flask import Flask, jsonify
 from flask import abort
 from flask import make_response
 from flask import request
-
+from werkzeug.utils import secure_filename
+import os
 
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = 'V:\Flask_Python POC'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 products = [
     {
@@ -40,14 +45,22 @@ def get_task(prod_id):
 
 @app.route('/products', methods=['POST'])
 def create_task():
-    if not request.json or not 'name' in request.json:
-        abort(400)
+   
+    name1=request.form.get("name")
+    description1= request.form.get("description")
+    count1= request.form.get("count")
+    id1= products[-1]['id'] + 1,
+    print(name1)
     product = {
         'id': products[-1]['id'] + 1,
-        'name': request.json['name'],
-        'description': request.json.get('description', ""),
-        'count': request.json['count']
+        'name': name1,
+        'description': description1,
+        'count': count1
     }
+    image=request.files['image']
+    filename=str(id1)+name1
+    #filename = secure_filename(image.filename)
+    image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     products.append(product)
     return jsonify({'product': product}), 201
 
@@ -58,11 +71,11 @@ def update_task(prod_id):
         abort(404)
     if not request.json:
         abort(400)
-    #if 'name' in request.json and type(request.json['name']) != json:
-        #abort(400)
+    
     product[0]['name'] = request.json.get('name', product[0]['name'])
     product[0]['description'] = request.json.get('description', product[0]['description'])
     product[0]['count'] = request.json.get('count', product[0]['count'])
+    
     return jsonify({'product': product[0]})
 
 @app.route('/products/<int:prod_id>', methods=['DELETE'])
