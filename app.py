@@ -69,12 +69,22 @@ def update_task(prod_id):
     product = [product for product in products if product['id'] == prod_id]
     if len(product) == 0:
         abort(404)
-    if not request.json:
-        abort(400)
     
-    product[0]['name'] = request.json.get('name', product[0]['name'])
-    product[0]['description'] = request.json.get('description', product[0]['description'])
-    product[0]['count'] = request.json.get('count', product[0]['count'])
+    product[0]['name'] = request.form.get('name')
+    product[0]['description'] = request.form.get('description')
+    product[0]['count'] = request.form.get('count')
+    image=request.files['image']
+    
+    id1=product[0]['id']
+    name1=product[0]['name']
+    filename=str(id1)+name1
+
+    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    
+    
+    
+    #filename = secure_filename(image.filename)
+    image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     
     return jsonify({'product': product[0]})
 
@@ -84,6 +94,14 @@ def delete_task(prod_id):
     if len(product) == 0:
         abort(404)
     products.remove(product[0])
+
+    id1=product[0]['id']
+    name1=product[0]['name']
+    filename=str(id1)+name1
+
+    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    
+
     return jsonify({'result': True})
 
 if __name__ == '__main__':
